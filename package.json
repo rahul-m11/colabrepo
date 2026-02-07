@@ -1,0 +1,25 @@
+{
+  "name": "ecommerce-modular-platform",
+  "version": "1.0.0",
+  "description": "A modular e-commerce platform with separate Dashboard and Product Selling modules",
+  "main": "index.html",
+  "scripts": {
+    "start": "python -m http.server 8000",
+    "serve": "npx http-server -p 8000"
+  },
+  "keywords": [
+    "ecommerce",
+    "modular",
+    "dashboard",
+    "products",
+    "vanilla-javascript"
+  ],
+  "author": "",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/colabrepo.git"
+  },
+  "devDependencies": {},
+  "dependencies": {}
+}
