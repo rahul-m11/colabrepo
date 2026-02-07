@@ -167,43 +167,45 @@ export class ProductsModule {
         const isInCart = this.cart.some(item => item.id === product.id);
         
         return `
-            <div class="product-card card" data-product-id="${product.id}">
-                ${product.discount ? `<div class="discount-badge">-${product.discount}%</div>` : ''}
-                ${product.featured ? '<div class="featured-badge"><i class="fas fa-star"></i> Featured</div>' : ''}
-                ${!product.inStock ? '<div class="out-of-stock-overlay">Out of Stock</div>' : ''}
-                
-                <div class="product-image">
-                    <img src="${product.image}" alt="${product.name}" loading="lazy">
-                    <div class="product-overlay">
-                        <button class="btn-icon view-product" title="Quick View">
-                            <i class="fas fa-eye"></i>
-                        </button>
-                    </div>
-                </div>
-                
-                <div class="product-info">
-                    <div class="product-category">${product.category}</div>
-                    <h3 class="product-name">${product.name}</h3>
-                    <p class="product-description">${product.description}</p>
+            <div class="product-card" data-product-id="${product.id}">
+                <div class="product-card-inner card">
+                    ${product.discount ? `<div class="discount-badge">-${product.discount}%</div>` : ''}
+                    ${product.featured ? '<div class="featured-badge"><i class="fas fa-star"></i> Featured</div>' : ''}
+                    ${!product.inStock ? '<div class="out-of-stock-overlay">Out of Stock</div>' : ''}
                     
-                    <div class="product-rating">
-                        ${this.getStarRating(product.rating)}
-                        <span class="rating-text">${product.rating} (${product.reviews})</span>
+                    <div class="product-image">
+                        <img src="${product.image}" alt="${product.name}" loading="lazy">
+                        <div class="product-overlay">
+                            <button class="btn-icon view-product" title="Quick View">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
                     </div>
                     
-                    <div class="product-footer">
-                        <div class="product-price">
-                            ${product.originalPrice ? 
-                                `<span class="original-price">$${product.originalPrice}</span>` : ''}
-                            <span class="current-price">$${product.price}</span>
+                    <div class="product-info">
+                        <div class="product-category">${product.category}</div>
+                        <h3 class="product-name">${product.name}</h3>
+                        <p class="product-description">${product.description}</p>
+                        
+                        <div class="product-rating">
+                            ${this.getStarRating(product.rating)}
+                            <span class="rating-text">${product.rating} (${product.reviews})</span>
                         </div>
                         
-                        <button class="btn btn-primary add-to-cart" 
-                                data-product-id="${product.id}"
-                                ${!product.inStock || isInCart ? 'disabled' : ''}>
-                            <i class="fas fa-shopping-cart"></i>
-                            ${isInCart ? 'In Cart' : 'Add to Cart'}
-                        </button>
+                        <div class="product-footer">
+                            <div class="product-price">
+                                ${product.originalPrice ? 
+                                    `<span class="original-price">$${product.originalPrice}</span>` : ''}
+                                <span class="current-price">$${product.price}</span>
+                            </div>
+                            
+                            <button class="btn btn-primary add-to-cart" 
+                                    data-product-id="${product.id}"
+                                    ${!product.inStock || isInCart ? 'disabled' : ''}>
+                                <i class="fas fa-shopping-cart"></i>
+                                ${isInCart ? 'In Cart' : 'Add to Cart'}
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -278,6 +280,50 @@ export class ProductsModule {
             if (e.target === modal) {
                 modal.style.display = 'none';
             }
+        });
+
+        this.init3DTilt();
+    }
+
+    init3DTilt() {
+        if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            return;
+        }
+
+        const cards = document.querySelectorAll('.product-card');
+        cards.forEach(card => {
+            const surface = card.querySelector('.product-card-inner');
+            if (!surface) return;
+
+            const reset = () => {
+                surface.classList.remove('is-tilting');
+                surface.style.setProperty('--tilt-x', '0deg');
+                surface.style.setProperty('--tilt-y', '0deg');
+                surface.style.setProperty('--shine-x', '50%');
+                surface.style.setProperty('--shine-y', '50%');
+            };
+
+            card.addEventListener('pointerenter', () => {
+                surface.classList.add('is-tilting');
+            });
+
+            card.addEventListener('pointermove', (e) => {
+                const rect = card.getBoundingClientRect();
+                const x = Math.min(Math.max((e.clientX - rect.left) / rect.width, 0), 1);
+                const y = Math.min(Math.max((e.clientY - rect.top) / rect.height, 0), 1);
+
+                const maxTilt = 10;
+                const tiltY = (x - 0.5) * (maxTilt * 2);
+                const tiltX = (0.5 - y) * (maxTilt * 2);
+
+                surface.style.setProperty('--tilt-x', `${tiltX.toFixed(2)}deg`);
+                surface.style.setProperty('--tilt-y', `${tiltY.toFixed(2)}deg`);
+                surface.style.setProperty('--shine-x', `${(x * 100).toFixed(2)}%`);
+                surface.style.setProperty('--shine-y', `${(y * 100).toFixed(2)}%`);
+            });
+
+            card.addEventListener('pointerleave', reset);
+            card.addEventListener('pointercancel', reset);
         });
     }
 
